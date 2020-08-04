@@ -2,24 +2,19 @@ name: Test yugabytedb-action
 
 on:
   push:
-  pull_request:
 
 jobs:
   test-yugabytedb-action:
     runs-on: ubuntu-latest
-    steps:
-    - name: Setup yugabytedb action
-      id: server
-      uses: baba230896/poc-yugabytedb-action@issue-5098
-
-    - name: Print output variables
-      run: |
-        echo "Container ID: ${{ steps.server.outputs.container_id }}"
-        echo "YB Master UI Port: ${{ steps.server.outputs.yb_master_ui_port }}"
-        echo "YB Tserver UI Port: ${{ steps.server.outputs.yb_tserver_ui_port }}"
-        echo "YSQL Port: ${{ steps.server.outputs.ysql_port }}"
-        echo "YCQL Port: ${{ steps.server.outputs.ycql_port }}"
-
+    container:
+      image: yugabytedb/yugabyte:latest
+      ports:
+        - 7000
+        - 9000
+        - 5433
+        - 9042
+      options: --entrypoint bin/yugabyted start --daemon=false
+    steps: 
     - name: Test YSQL API
       run: docker run --network host --rm yugabytedb/yugabyte-client:latest ysqlsh -h localhost -p "${{ steps.server.outputs.ysql_port }}" -c \\conninfo
 
